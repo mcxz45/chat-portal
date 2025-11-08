@@ -6,8 +6,8 @@
     <title>兄弟聊天室入口</title>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             margin: 0;
             padding: 20px;
             min-height: 100vh;
@@ -15,182 +15,94 @@
             justify-content: center;
             align-items: center;
             color: white;
+            text-align: center;
         }
-        
         .container {
-            max-width: 500px;
-            width: 100%;
             background: rgba(255, 255, 255, 0.1);
             padding: 40px;
             border-radius: 20px;
             backdrop-filter: blur(10px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-            text-align: center;
+            max-width: 500px;
+            width: 100%;
         }
-        
         h1 {
-            margin-bottom: 20px;
-            font-size: 2rem;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
         }
-        
-        .server-option {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 20px;
-            margin: 15px 0;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s;
-            border: 2px solid transparent;
-        }
-        
-        .server-option:hover {
-            background: rgba(255, 255, 255, 0.3);
-            border-color: white;
-            transform: translateY(-2px);
-        }
-        
-        .server-title {
+        .countdown {
+            font-size: 3rem;
             font-weight: bold;
-            font-size: 1.2rem;
-            margin-bottom: 5px;
+            margin: 20px 0;
+            color: #4CAF50;
         }
-        
-        .server-desc {
-            font-size: 0.9rem;
-            opacity: 0.8;
-        }
-        
-        .manual-input {
-            margin-top: 30px;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-        }
-        
-        input {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-        
-        button {
-            width: 100%;
-            padding: 12px;
+        .btn {
             background: white;
-            color: #1e3c72;
+            color: #667eea;
             border: none;
-            border-radius: 5px;
-            font-size: 16px;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.2rem;
             font-weight: bold;
             cursor: pointer;
-            transition: transform 0.3s;
+            margin: 10px;
         }
-        
-        button:hover {
-            transform: translateY(-2px);
+        .server-info {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-family: monospace;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎮 兄弟聊天室入口</h1>
-        <p>请选择服务器连接方式：</p>
+        <h1>🎮 兄弟聊天室</h1>
+        <p>正在连接到聊天服务器...</p>
         
-        <!-- 常用服务器列表 -->
-        <div class="server-option" onclick="connectToServer('192.168.0.102:3000')">
-            <div class="server-title">🏠 家庭网络服务器</div>
-            <div class="server-desc">局域网访问 (推荐)</div>
+        <div class="server-info">
+            目标服务器: http://192.168.0.102:3000
         </div>
         
-        <div class="server-option" onclick="connectToServer('localhost:3000')">
-            <div class="server-title">💻 本地测试服务器</div>
-            <div class="server-desc">本机访问</div>
-        </div>
+        <div class="countdown" id="countdown">3</div>
         
-        <!-- 手动输入服务器地址 -->
-        <div class="manual-input">
-            <div class="server-title">🔧 自定义服务器</div>
-            <input type="text" id="customServer" placeholder="输入服务器地址，如: 192.168.1.100:3000">
-            <button onclick="connectCustomServer()">连接</button>
-        </div>
-        
-        <div style="margin-top: 20px; font-size: 0.8rem; opacity: 0.7;">
-            💡 提示：如果无法连接，请确保服务器正在运行且防火墙已关闭
-        </div>
+        <button class="btn" onclick="jumpNow()">立即进入</button>
     </div>
 
     <script>
-        // 连接服务器函数
-        function connectToServer(serverUrl) {
-            const fullUrl = `http://${serverUrl}`;
-            showLoading(`正在连接到: ${serverUrl}`);
-            
-            // 先测试连接
-            testConnection(serverUrl)
-                .then(() => {
-                    // 连接成功，跳转
-                    window.location.href = fullUrl;
-                })
-                .catch(() => {
-                    // 连接失败，显示错误
-                    showError(`无法连接到服务器: ${serverUrl}`);
-                });
-        }
+        const TARGET_URL = "http://192.168.0.102:3000";
+        let countdown = 3;
         
-        // 连接自定义服务器
-        function connectCustomServer() {
-            const serverInput = document.getElementById('customServer').value.trim();
-            if (!serverInput) {
-                showError('请输入服务器地址');
-                return;
-            }
-            
-            // 确保有端口号
-            let serverUrl = serverInput;
-            if (!serverInput.includes(':')) {
-                serverUrl = serverInput + ':3000';
-            }
-            
-            connectToServer(serverUrl);
-        }
-        
-        // 测试服务器连接
-        function testConnection(serverUrl) {
-            return new Promise((resolve, reject) => {
-                const testImage = new Image();
-                testImage.onload = () => resolve();
-                testImage.onerror = () => reject();
-                testImage.src = `http://${serverUrl}/favicon.ico?t=${Date.now()}`;
+        function startCountdown() {
+            const countdownElement = document.getElementById('countdown');
+            const timer = setInterval(() => {
+                countdown--;
+                countdownElement.textContent = countdown;
                 
-                // 3秒超时
-                setTimeout(() => reject(), 3000);
-            });
+                if (countdown <= 0) {
+                    clearInterval(timer);
+                    jumpToChat();
+                }
+            }, 1000);
         }
         
-        // 显示加载中
-        function showLoading(message) {
-            alert(`⏳ ${message}\n\n如果长时间无法连接，请检查：\n1. 服务器是否启动\n2. 防火墙是否关闭\n3. 网络是否通畅`);
+        function jumpToChat() {
+            // 直接跳转，不进行任何检测
+            window.location.href = TARGET_URL;
         }
         
-        // 显示错误
-        function showError(message) {
-            alert(`❌ ${message}\n\n请检查：\n• 服务器地址是否正确\n• 服务器程序是否运行\n• 端口3000是否被占用`);
+        function jumpNow() {
+            jumpToChat();
         }
         
-        // 回车键连接
-        document.getElementById('customServer').addEventListener('keypress', (e) => {
+        // 页面加载后立即开始倒计时
+        window.onload = startCountdown;
+        
+        // 回车键也可以立即跳转
+        document.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
-                connectCustomServer();
+                jumpNow();
             }
-        });
-        
-        // 页面加载时尝试自动连接常用服务器
-        window.addEventListener('load', () => {
-            console.log('兄弟聊天室入口页面已加载');
-            console.log('当前访问域名:', window.location.hostname);
         });
     </script>
 </body>
